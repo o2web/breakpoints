@@ -1,7 +1,7 @@
 {
   "name": "Breakpoints",
   "main": "breakpoints.js",
-  "version": "0.1",
+  "version": "1.0.0",
   "authors": [
     "Charles Thibault <cthibault@o2web.ca>"
   ],
