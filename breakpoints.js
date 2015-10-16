@@ -1,10 +1,11 @@
-// moBreakpoints.js
-// o2web.ca
-// 2013-2015
+/*
+* breakpoints.js
+* o2web.ca
+* 2015
+* GPL v2 License
+*/
 
-//
-//
-// DEFINE MODULE
+// AMD MODULE LOADER DEFINITION
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // Define AMD module
@@ -15,91 +16,147 @@
   }
 }
 
-//
-//
 // MAIN CODE
 (this, function($){
 
-	var root = this;
-	if(!root.breakpoints) root.breakpoints = {
-		elements: [],
-		event: 'afterwindowresize'
+	var app = this;
+	if(!app.breakpoints) app.breakpoints = {
+		init: {},
+		resize: {},
+		event: 'afterwindowresize',
+		rafref: false
 	};
-	var breakpoints = root.breakpoints;
 
-	$.extend($.fn,{
-		breakpoints: function(args){
-			if($(this).length==0) return false;
-			var els = $(this);
-			for(var i=0; i < els.length; i++){
-				var el =  els[i];
-				if(!el.bp) el.bp = [];
-				el.bp.push({
-						width: 9999,
-						triggerEvent: 'bpInit',
-						callback: null,
-						active: false
-					});
-				if(typeof(args)=='object'){
-					if(args.length){
-						for(var k=0; k<args.length; k++){
-							var bp = $.extend({
-								width: 9999,
-								active:false,
-								triggerEvent:null,
-								callback: null
-							},args[k]);
-							el.bp.push(bp);
+	//
+	//
+	// BP object
+	Breakpoints = function(args, options){
+
+		var self = this;
+
+		//
+		//
+		// add breakpoint
+		this.add = function(minMax, width, callbacks, initial){
+			initial = !!initial;
+			var type = initial ? 'init' : 'resize';
+			if(typeof callbacks != 'object') callbacks = [callbacks];
+
+			// return if no width or no callbacks are defined
+			if(!width || !callbacks.length) return;
+
+			var bpWidth = width.toString();
+
+			// check if BP exists
+			if(!app.breakpoints[type][bpWidth]){
+				app.breakpoints[type][bpWidth] = {
+					active: false,
+					width: width,
+					min: [],
+					max: []
+				}
+			}
+
+			// push callbacks
+			for(var i=0; i<callbacks.length; i++){
+				if(typeof callbacks[i] == 'function'){
+					app.breakpoints[type][bpWidth][minMax].push(callbacks[i]);
+				}
+			}
+
+			// trigger init callbacks right now if already initiated
+			if(initial && app.breakpoints.initiated) self.checkBreakpoints(true);
+
+			// hook resize loop
+			if(!app.breakpoints.rafref){
+				app.breakpoints.rafref = app.raf.on(app.breakpoints.event, self.checkBreakpoints).ref;
+			}
+
+		}
+
+
+		//
+		//
+		// SHORTHANDS
+
+		// min-width shorthand
+		this.min = function(width, callbacks){
+			self.add('min', width, callbacks);
+		}
+
+		// max-width shorthand
+		this.max = function(width, callbacks){
+			self.add('max', width, callbacks);
+		}
+
+		// initial BPs
+		this.initial = {
+			min: function(width, callbacks){
+				self.add('min', width, callbacks, true);
+			},
+			max: function(width, callbacks){
+				self.add('max', width, callbacks, true);
+			}
+		}
+
+
+		//
+		//
+		//
+		this.checkBreakpoints = function(init){
+			init = init === true;
+			var bps = app.breakpoints[init ? 'init' : 'resize' ];
+			var winWidth = app.innerWidth;
+
+			for(var bpKey in bps){
+				var bp = bps[bpKey];
+				if((init||!bp.active) && winWidth<=bp.width){
+					bp.active = true;
+					if(bp.max.length){
+						for(var i=0; i<bp.max.length; i++){
+							bp.max[i]();
 						}
-					}else{
-						var bp = $.extend({
-							width: 9999,
-							active:false,
-							triggerEvent:null,
-							callback: null
-						},args);
-						el.bp.push(bp);
 					}
 				}
-				breakpoints.elements.push(el);
+				if((init||bp.active) && winWidth>bp.width){
+					bp.active = false;
+					if(bp.min.length){
+						for(var i=0; i<bp.min.length; i++){
+							bp.min[i]();
+						}
+					}
+				}
 			}
 
-			// check for raf-event override
-			if(args && args.event) breakpoints.event = args.event;
+			// clear inital breakpoints
+			if(init){
+				for(var bpKey in bps){
+					if(app.breakpoints.resize[bpKey]){
+						app.breakpoints.resize[bpKey].active = bps[bpKey].active;
+					}
+				}
+				app.breakpoints.init = [];
+				app.breakpoints.initiated = true;
+			}
 
-			checkBp('init');
-			if(!breakpoints.rafref)
-				breakpoints.rafref = root.raf.on(breakpoints.event, checkBp).ref;
 		}
+
+	}
+
+
+	//
+	//
+	//
+	//
+	//
+	//
+	//	INIT
+
+	$.breakpoints = new Breakpoints();
+
+	$(document).ready(function(){
+		$.breakpoints.checkBreakpoints(true);
 	});
 
-	function checkBp(option){
-		var els = breakpoints.elements;
-		var init = option=='init';
-		for(var i=0; i< els.length; i++){
-			var el  = els[i];
-			var bps = el.bp;
-			var w = el.innerWidth;
-			for(var m=0;m<bps.length;m++){
-				var bp = bps[m];
-				if((init||!bp.active) && w<=bp.width){
-					bp.active = true;
-					if(bp.triggerEvent && typeof(bp.triggerEvent)=='string') $(el).trigger(bp.triggerEvent);
-					if(bp.triggerEvent && typeof(bp.triggerEvent)=='object' && bp.triggerEvent.smaller && typeof(bp.triggerEvent.smaller)=='function') $(el).trigger(bp.triggerEvent.smaller);
-					if(bp.callback && typeof(bp.callback)=='function') bp.callback(init?'init':el);
-					if(bp.callback && typeof(bp.callback)=='object' && bp.callback.smaller && typeof(bp.callback.smaller)=='function') bp.callback.smaller(init?'init':el);
-				}
-				if((init||bp.active) && w>bp.width){
-					bp.active = false;
-					if(bp.triggerEvent && typeof(bp.triggerEvent)=='string') $(el).trigger(bp.triggerEvent);
-					if(bp.triggerEvent && typeof(bp.triggerEvent)=='object' && bp.triggerEvent.larger && typeof(bp.triggerEvent.larger)=='function') $(el).trigger(bp.triggerEvent.larger);
-					if(bp.callback && typeof(bp.callback)=='function') bp.callback(init?'init':el);
-					if(bp.callback && typeof(bp.callback)=='object' && bp.callback.larger && typeof(bp.callback.larger)=='function') bp.callback.larger(init?'init':el);
-				}
-
-			}
-
-		}
-	}
 
 }));
