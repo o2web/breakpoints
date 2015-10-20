@@ -11,20 +11,22 @@ Breakpoints.js allows you to trigger JS callbacks when the document is ready, or
 #### Resize Breakpoints 
 
 ```
-$.breakpoints.min(<width>, <callback>);
-$.breakpoints.max(<width>, <callback>);
+$.breakpoints.min(<width>, <callback>, <data>);
+$.breakpoints.max(<width>, <callback>, <data>);
 ```
 
 #### Initial Callbacks
 ```
-$.breakpoints.initial.min(<width>, <callback>);
-$.breakpoints.initial.max(<width>, <callback>);
+$.breakpoints.initial.min(<width>, <callback>, <data>);
+$.breakpoints.initial.max(<width>, <callback>, <data>);
 ```
 
 ___
 **width** | *integer* : The width of the window that will trigger the callback(s)
 ___
 **callback** | *function or array* : The callback(s) to be triggered
+___
+**data** | *anything* : Data you want to pass as argument for the callback function
 ___
 
 
