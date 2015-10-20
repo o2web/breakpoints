@@ -37,7 +37,7 @@
 		//
 		//
 		// add breakpoint
-		this.add = function(minMax, width, callbacks, initial){
+		this.add = function(minMax, width, callbacks, data, initial){
 			initial = !!initial;
 			var type = initial ? 'init' : 'resize';
 			if(typeof callbacks != 'object') callbacks = [callbacks];
@@ -60,7 +60,10 @@
 			// push callbacks
 			for(var i=0; i<callbacks.length; i++){
 				if(typeof callbacks[i] == 'function'){
-					app.breakpoints[type][bpWidth][minMax].push(callbacks[i]);
+					app.breakpoints[type][bpWidth][minMax].push({
+						callback: callbacks[i],
+						data: data
+					});
 				}
 			}
 
@@ -80,22 +83,22 @@
 		// SHORTHANDS
 
 		// min-width shorthand
-		this.min = function(width, callbacks){
-			self.add('min', width, callbacks);
+		this.min = function(width, callbacks, data){
+			self.add('min', width, callbacks, data);
 		}
 
 		// max-width shorthand
-		this.max = function(width, callbacks){
-			self.add('max', width, callbacks);
+		this.max = function(width, callbacks, data){
+			self.add('max', width, callbacks, data);
 		}
 
 		// initial BPs
 		this.initial = {
-			min: function(width, callbacks){
-				self.add('min', width, callbacks, true);
+			min: function(width, callbacks, data){
+				self.add('min', width, callbacks, data, true);
 			},
-			max: function(width, callbacks){
-				self.add('max', width, callbacks, true);
+			max: function(width, callbacks, data){
+				self.add('max', width, callbacks, data, true);
 			}
 		}
 
@@ -114,7 +117,7 @@
 					bp.active = true;
 					if(bp.max.length){
 						for(var i=0; i<bp.max.length; i++){
-							bp.max[i]();
+							bp.max[i].callback(bp.max[i].data);
 						}
 					}
 				}
@@ -122,7 +125,7 @@
 					bp.active = false;
 					if(bp.min.length){
 						for(var i=0; i<bp.min.length; i++){
-							bp.min[i]();
+							bp.min[i].callback(bp.min[i].data);
 						}
 					}
 				}
