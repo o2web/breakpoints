@@ -43,7 +43,7 @@
 			if(typeof callbacks != 'object') callbacks = [callbacks];
 
 			// return if no width or no callbacks are defined
-			if(!width || !callbacks.length) return;
+			if(!width || !callbacks.length) return;
 
 			var bpWidth = width.toString();
 
