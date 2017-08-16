@@ -26,7 +26,7 @@
     "url": "https://github.com/o2web/breakpoints.git"
   },
   "dependencies": {
-    "jquery": "~1.11",
+    "jquery": ">=1.11",
     "o2-raf": "~1"
   }
 }
