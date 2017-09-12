@@ -1,0 +1,32 @@
+{
+  "name": "o2-breakpoints",
+  "version": "1.0.1",
+  "description": "JS breakpoints and responsive callbacks",
+  "keywords": [
+    "o2web",
+    "bp",
+    "breakpoints",
+    "resize",
+    "callback",
+    "javascript",
+    "js"
+  ],
+  "homepage": "http://o2web.ca",
+  "bugs": {
+    "url": "https://github.com/o2web/breakpoints/issues"
+  },
+  "license": "GPL-2.0",
+  "author": "Charles Thibault <cthibault@o2web.ca>",
+  "files": [
+    "breakpoints.min.js"
+  ],
+  "main": "breakpoints.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o2web/breakpoints.git"
+  },
+  "dependencies": {
+    "jquery": ">=1.11",
+    "o2-raf": "~1"
+  }
+}
